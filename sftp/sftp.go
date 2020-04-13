@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+	"net"
 	"os"
 	"path"
 	"time"
@@ -19,7 +20,7 @@ type Ssh struct {
 
 // UserInterface is test interface.
 type SshInterface interface {
-	Connect()
+	Connect() error
 	SendFile(localFilePath, remoteDir string) error
 }
 
@@ -40,6 +41,9 @@ func (params *Ssh) Connect() error {
 		User:    params.User,
 		Auth:    auth,
 		Timeout: 30 * time.Second,
+		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			return nil
+		},
 	}
 
 	// connect to ssh
