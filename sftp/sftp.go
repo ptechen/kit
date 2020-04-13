@@ -70,9 +70,7 @@ func (params *Ssh) createRemoteDir(remoteDir string) error {
 	return err
 }
 
-func (params *Ssh) SendFile(localFilePath, remoteDir string) error {
-	defer params.sshClient.Close()
-	defer params.sftpClient.Close()
+func (params *Ssh) UploadFile(localFilePath, remoteDir string) error {
 	err := params.createRemoteDir(remoteDir)
 	if err != nil {
 		return err
@@ -100,7 +98,26 @@ func (params *Ssh) SendFile(localFilePath, remoteDir string) error {
 				break
 			}
 		}
-		dstFile.Write(buf[: n])
+		dstFile.Write(buf[:n])
 	}
 	return err
+}
+
+func (params *Ssh) Download(remotePath, localPath string) error {
+	remoteFile, _ := params.sftpClient.Open(remotePath) //远程
+	localFile, _ := os.Create(localPath)                //本地
+	defer func() {
+		_ = remoteFile.Close()
+		_ = localFile.Close()
+	}()
+
+	if _, err := remoteFile.WriteTo(localFile); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (params *Ssh) Close() {
+	params.sftpClient.Close()
+	params.sshClient.Close()
 }
