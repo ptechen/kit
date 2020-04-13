@@ -19,11 +19,11 @@ func TestSsh_SendFile(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = ssh.createRemoteDir("/data/data")
+	err = ssh.CreateRemoteDir("/data/data")
 	if err != nil {
 		t.Error()
 	}
-	err = ssh.checkFileExist("/data/data")
+	err = ssh.CheckFileExist("/data/data")
 	if err != nil {
 		t.Error()
 	}

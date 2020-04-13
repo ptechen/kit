@@ -60,7 +60,7 @@ func (params *Ssh) Connect() error {
 	return nil
 }
 
-func (params *Ssh) createRemoteDir(remoteDir string) error {
+func (params *Ssh) CreateRemoteDir(remoteDir string) error {
 	err := params.sftpClient.Mkdir(remoteDir)
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (params *Ssh) createRemoteDir(remoteDir string) error {
 	return err
 }
 
-func (params *Ssh) checkFileExist(remotePath string) error {
+func (params *Ssh) CheckFileExist(remotePath string) error {
 	session, err := params.sshClient.NewSession()
 	if err != nil {
 		return err
@@ -79,9 +79,9 @@ func (params *Ssh) checkFileExist(remotePath string) error {
 }
 
 func (params *Ssh) UploadFile(localFilePath, remoteDir string) error {
-	err := params.checkFileExist(remoteDir)
+	err := params.CheckFileExist(remoteDir)
 	if err != nil {
-		err = params.createRemoteDir(remoteDir)
+		err = params.CreateRemoteDir(remoteDir)
 		if err != nil {
 			return err
 		}
