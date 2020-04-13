@@ -68,20 +68,23 @@ func (params *Ssh) createRemoteDir(remoteDir string) error {
 	return err
 }
 
-func (params *Ssh) CheckFileExist(remotePath string) error {
+func (params *Ssh) checkFileExist(remotePath string) error {
 	session, err := params.sshClient.NewSession()
 	if err != nil {
 		return err
 	}
 	defer session.Close()
-	err = session.Run("find "+ remotePath)
+	err = session.Run(fmt.Sprintf("find %s", remotePath))
 	return err
 }
 
 func (params *Ssh) UploadFile(localFilePath, remoteDir string) error {
-	err := params.createRemoteDir(remoteDir)
+	err := params.checkFileExist(remoteDir)
 	if err != nil {
-		return err
+		err = params.createRemoteDir(remoteDir)
+		if err != nil {
+			return err
+		}
 	}
 	srcFile, err := os.Open(localFilePath)
 	if err != nil {

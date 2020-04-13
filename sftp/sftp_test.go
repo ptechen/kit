@@ -18,8 +18,14 @@ func TestSsh_SendFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = ssh.CheckFileExist("/datas/nfs")
+
+	err = ssh.createRemoteDir("/data/data")
 	if err != nil {
 		t.Error()
 	}
+	err = ssh.checkFileExist("/data/data")
+	if err != nil {
+		t.Error()
+	}
+
 }
