@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+	"io"
 	"net"
 	"os"
 	"path"
@@ -15,6 +16,7 @@ type Ssh struct {
 	Password   string       `json:"password"`
 	Host       string       `json:"host"`
 	Port       int          `json:"port"`
+	sshClient  *ssh.Client  `json:"ssh_client"`
 	sftpClient *sftp.Client `json:"sftp_client"`
 }
 
@@ -29,8 +31,6 @@ func (params *Ssh) Connect() error {
 		auth         []ssh.AuthMethod
 		addr         string
 		clientConfig *ssh.ClientConfig
-		sshClient    *ssh.Client
-		sftpClient   *sftp.Client
 		err          error
 	)
 	// get auth method
@@ -49,20 +49,34 @@ func (params *Ssh) Connect() error {
 	// connect to ssh
 	addr = fmt.Sprintf("%s:%d", params.Host, params.Port)
 
-	if sshClient, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
+	if params.sshClient, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
 		return err
 	}
 
 	// create sftp client
-	if sftpClient, err = sftp.NewClient(sshClient); err != nil {
+	if params.sftpClient, err = sftp.NewClient(params.sshClient); err != nil {
 		return err
 	}
-	params.sftpClient = sftpClient
 	return nil
 }
 
+func (params *Ssh) createRemoteDir(remoteDir string) error {
+	session, err := params.sshClient.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	err = session.Run(fmt.Sprintf("mkdir -p %s", remoteDir))
+	return err
+}
+
 func (params *Ssh) SendFile(localFilePath, remoteDir string) error {
+	defer params.sshClient.Close()
 	defer params.sftpClient.Close()
+	err := params.createRemoteDir(remoteDir)
+	if err != nil {
+		return err
+	}
 	srcFile, err := os.Open(localFilePath)
 	if err != nil {
 		return err
@@ -78,11 +92,15 @@ func (params *Ssh) SendFile(localFilePath, remoteDir string) error {
 
 	buf := make([]byte, 1024)
 	for {
-		n, _ := srcFile.Read(buf)
-		if n == 0 {
-			break
+		n, err := srcFile.Read(buf)
+		if err != nil {
+			if err != io.EOF {
+				return err
+			} else {
+				break
+			}
 		}
-		dstFile.Write(buf)
+		dstFile.Write(buf[: n])
 	}
 	return err
 }

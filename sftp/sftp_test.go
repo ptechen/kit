@@ -13,7 +13,7 @@ func TestSsh_SendFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = ssh.SendFile("/Users/taochen/go/src/kit/sftp/sftp.go", "/data/nfs")
+	err = ssh.SendFile("/Users/taochen/go/src/kit/sftp/sftp.go", "/datas/nfs")
 	if err != nil {
 		t.Error(err)
 	}
