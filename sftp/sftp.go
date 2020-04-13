@@ -61,12 +61,20 @@ func (params *Ssh) Connect() error {
 }
 
 func (params *Ssh) createRemoteDir(remoteDir string) error {
+	err := params.sftpClient.Mkdir(remoteDir)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (params *Ssh) CheckFileExist(remotePath string) error {
 	session, err := params.sshClient.NewSession()
 	if err != nil {
 		return err
 	}
 	defer session.Close()
-	err = session.Run(fmt.Sprintf("mkdir -p %s", remoteDir))
+	err = session.Run("find "+ remotePath)
 	return err
 }
 
