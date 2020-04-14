@@ -128,6 +128,16 @@ func (params *Ssh) Download(remotePath, localPath string) error {
 	return nil
 }
 
+func (params *Ssh) Shell(cmd string) error {
+	session, err := params.sshClient.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	err = session.Run(cmd)
+	return err
+}
+
 func (params *Ssh) Close() {
 	params.sftpClient.Close()
 	params.sshClient.Close()
