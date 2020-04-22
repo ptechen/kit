@@ -28,4 +28,8 @@ func TestSsh_SendFile(t *testing.T) {
 		t.Error()
 	}
 
+	err = ssh.Shell(`rsync -avR --link-dest=./sftp 192.168.100.34 192.168.3.145`)
+	if err != nil {
+		t.Error(err)
+	}
 }
